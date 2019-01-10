@@ -91,10 +91,9 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
         half_twod_y = y[half_twod_ind]
         
         half_area=len(half_twod_ind)
-        
+
         half_ell_maj,half_ell_min,half_ell_pa=ellfit(half_twod_x,half_twod_y)  
-        
-        
+                
         
         # next, use the 3d-calculated posang to fit the moments along the major/minor
         xrot =  x*pl.cos(posang) + y*pl.sin(posang)

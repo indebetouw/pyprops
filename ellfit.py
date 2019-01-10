@@ -61,6 +61,7 @@ def ellfit(x,y,wt=None):
 #    if posang<0: posang = posang+pl.pi
 
 # MAJOR AND MINOR AXIS SIZES
+# turn into real half-max major/minor axis
     major = pl.sqrt(evals[maj_ind])*4.
     minor = pl.sqrt(evals[min_ind])*4.
 
