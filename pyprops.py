@@ -36,7 +36,8 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     
     from astropy import wcs
     w = wcs.WCS(hdr)
-    pix=pl.sqrt(-pl.det(w.celestial.pixel_scale_matrix)) # degrees
+#    pix=pl.sqrt(-pl.det(w.celestial.pixel_scale_matrix)) # degrees
+    pix=pl.absolute(w.wcs.get_cdelt()[0]) # degrees
     
     bmaj_pix=bmaj/pix
     bmin_pix=bmin/pix
