@@ -55,14 +55,14 @@ def cube_to_moments( datacube, assigncube, montecarlo=0, bm_pix=[0,0,0], verbose
 
         m=measure_moments(t,x,y,v,bm_pix=bm_pix)
 
-        import pdb
-        pl.clf()
-        pl.imshow(datacube[int(m['mom1v']),:,:],origin="bottom",interpolation="nearest")
-        pl.xlim(x.min(),x.max())
-        pl.ylim(y.min(),y.max())
-        pl.plot([m['mom1x']-m['mom2x'],m['mom1x']+m['mom2x']],[m['mom1y']-m['mom2y'],m['mom1y']+m['mom2y']])
-        pl.plot([m['mom1x']+m['halfmax_ell_maj'],m['mom1x']-m['halfmax_ell_maj']],[m['mom1y']-m['halfmax_ell_min'],m['mom1y']+m['halfmax_ell_min']])
-        pdb.set_trace()
+        #import pdb
+        #pl.clf()
+        #pl.imshow(datacube[int(m['mom1v']),:,:],origin="bottom",interpolation="nearest")
+        #pl.xlim(x.min(),x.max())
+        #pl.ylim(y.min(),y.max())
+        #pl.plot([m['mom1x']-m['mom2x'],m['mom1x']+m['mom2x']],[m['mom1y']-m['mom2y'],m['mom1y']+m['mom2y']])
+        #pl.plot([m['mom1x']+m['halfmax_ell_maj'],m['mom1x']-m['halfmax_ell_maj']],[m['mom1y']-m['halfmax_ell_min'],m['mom1y']+m['halfmax_ell_min']])
+        #pdb.set_trace()
 
 
         for k0,v0 in m.items():

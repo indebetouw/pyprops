@@ -56,7 +56,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     moments['posang']=moments['posang']%pl.pi
     moments['de_posang']=moments['de_posang']%pl.pi
     
-    pickle.dump([moments,bm_pix,mcmoments],open("pyprops."+datestr+"."+root+".pkl","wb"))
+    pickle.dump([moments,bm_pix,mcmoments],open(root+".pyprops.pkl","wb"))
 
     
     if assignfile2:
@@ -66,7 +66,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         moments2['posang']=moments2['posang']%pl.pi
         moments2['de_posang']=moments2['de_posang']%pl.pi
         
-        pickle.dump([moments2,bm_pix,mcmoments2],open("pyprops."+datestr+"."+root2+".pkl","wb"))
+        pickle.dump([moments2,bm_pix,mcmoments2],open(root2+"pyprops.pkl","wb"))
 
 
     #######################################################################
@@ -87,7 +87,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.xscale("log")
         pl.yscale("log")
         
-        pl.savefig("pyprops."+datestr+"."+root+".sizeline.png")
+        pl.savefig(root+".pyprops.sizeline.png")
 
 
     if doplots:
@@ -103,7 +103,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.xlim(pl.xlim()[::-1])
         pl.ylabel("cumulative number")
         
-        pl.savefig("pyprops."+datestr+"."+root+".cumfluxdist.png")
+        pl.savefig(root+".pyprops.cumfluxdist.png")
         
 
     if doplots and montecarlo>0:
@@ -123,7 +123,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.xlim(.1,100)
         pl.ylim(.5,500)
         pl.plot(pl.xlim(),pl.array(pl.xlim())*3)
-        pl.savefig("pyprops."+datestr+"."+root+".I_F.png")
+        pl.savefig(root+".pyprops.I_F.png")
 
 
 
@@ -145,7 +145,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.xlabel("F [Bunit * pix^2 * vpix]")
         pl.legend(loc="best",prop={"size":10},numpoints=1)
         pl.xscale("log")
-        pl.savefig("pyprops."+datestr+"."+root+".F_area.png")
+        pl.savefig(root+".pyprops.F_area.png")
         
         
         
@@ -185,7 +185,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.legend(loc="best",prop={"size":10},numpoints=1)
         
         #pl.xscale("log")
-        pl.savefig("pyprops."+datestr+"."+root+".area_dearea.png")
+        pl.savefig(root+".pyprops.area_dearea.png")
         
         
         raterr=area2/area1
@@ -195,7 +195,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.xlabel("ell area")
         pl.ylabel("ell area / mom2 area")
     
-        pl.savefig("pyprops."+datestr+"."+root+".ellarea_momarea.png")
+        pl.savefig(root+".pyprops.ellarea_momarea.png")
     
     
     
@@ -241,9 +241,9 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
             pl.xlim(0,0.35)
         
         if montecarlo>100:
-            pl.savefig("pyprops."+datestr+"."+root+"."+k+".mciters.png")
+            pl.savefig(root+".pyprops."+k+".mciters.png")
         else:
-            pl.savefig("pyprops."+datestr+"."+root+"."+k+".png")        
+            pl.savefig(root+".pyprops."+k+".png")        
 
 
     if doplots:
@@ -270,7 +270,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.plot(moments['halfmax_ell_maj'][z],moments['halfmax_ell_min'][z],'r*',label='dec both=0')
         pl.legend(loc="best",prop={"size":10},numpoints=1)
         
-        pl.savefig("pyprops."+datestr+"."+root+".measured_ellipses.png")
+        pl.savefig(root+".pyprops.measured_ellipses.png")
         
         
         pl.clf()
@@ -289,7 +289,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.plot(moments['posang'][z],moments['halfmax_ell_min'][z],'r*',label='dec both=0')
         pl.legend(loc="best",prop={"size":10},numpoints=1)
         
-        pl.savefig("pyprops."+datestr+"."+root+".measured_ellipses_angles.png")
+        pl.savefig(root+".pyprops.measured_ellipses_angles.png")
         
         
         
@@ -307,4 +307,4 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         
         pl.plot(pl.xlim(),[bm_pix[2]+pl.pi/2,bm_pix[2]+pl.pi/2],'k',linestyle='dotted')
     
-        pl.savefig("pyprops."+datestr+"."+root+".dec_ellipses_angles.png")
+        pl.savefig(root+".pyprops.dec_ellipses_angles.png")
