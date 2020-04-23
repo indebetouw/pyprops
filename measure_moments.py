@@ -2,20 +2,21 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
     #import pdb
     # for testing:
     if not maxindex: maxindex=len(tin)
-    import pylab as pl
+    import matplotlib.pyplot as pl
+    import numpy as np
     
     # sort by pixel values from brightest to faintest
-    u=pl.argsort(tin)[::-1][0:maxindex-1]
+    u=np.argsort(tin)[::-1][0:maxindex-1]
     t=tin[u].copy()
     v=vin[u].copy()  # these are all cube indices in pixels
     y=yin[u].copy()
     x=xin[u].copy()
 
     if len(t)==0:
-        t=pl.array([-1])
-        v=pl.array([-1])
-        y=pl.array([-1])
-        x=pl.array([-1])
+        t=np.array([-1])
+        v=np.array([-1])
+        y=np.array([-1])
+        x=np.array([-1])
     
     moment={}
     moment['npix']=len(t)
@@ -28,9 +29,9 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
     # use cumulative moments (need a function that returns the cumulative array)
     # or else just return the sum
     if do_extrap:
-        tot=pl.cumsum  
+        tot=np.cumsum  
     else:
-        tot=pl.sum   # TODO may break some things below with indexing mom1x
+        tot=np.sum   # TODO may break some things below with indexing mom1x
     
     if t.max()>0:
     
@@ -43,20 +44,20 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
         # second moments
         term1x = tot(t*x**2)
         term2x = tot(t*x)**2 / mom0
-        mom2x = pl.sqrt((term1x - term2x)/mom0)
-        zeroind = pl.where(pl.absolute(term1x - term2x) < 1e-10)
+        mom2x = np.sqrt((term1x - term2x)/mom0)
+        zeroind = np.where(np.absolute(term1x - term2x) < 1e-10)
         if len(zeroind)>0: mom2x[zeroind] = 0.0
         
         term1y = tot(t*y**2)
         term2y = tot(t*y)**2 / mom0
-        mom2y = pl.sqrt((term1y - term2y)/mom0)
-        zeroind = pl.where(pl.absolute(term1y - term2y) < 1e-10)
+        mom2y = np.sqrt((term1y - term2y)/mom0)
+        zeroind = np.where(np.absolute(term1y - term2y) < 1e-10)
         if len(zeroind)>0: mom2y[zeroind] = 0.0
         
         term1v = tot(t*v**2)
         term2v = tot(t*v)**2 / mom0
-        mom2v = pl.sqrt((term1v - term2v)/mom0)
-        zeroind = pl.where(pl.absolute(term1v - term2v) < 1e-10)
+        mom2v = np.sqrt((term1v - term2v)/mom0)
+        zeroind = np.where(np.absolute(term1v - term2v) < 1e-10)
         if len(zeroind)>0: mom2v[zeroind] = 0.0
           
         
@@ -65,7 +66,7 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
         
         # unique set of 2-d indices for the 3-d clump
         twod_id = x + y*(x.max()+1)  
-        twod_ind = pl.unique(twod_id,return_index=True)[1]
+        twod_ind = np.unique(twod_id,return_index=True)[1]
         twod_x = x[twod_ind]
         twod_y = y[twod_ind]
         
@@ -85,8 +86,8 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
         
         #-----------------------
         # now find all pixels above 0.5*max, and again find the 2D projection:
-        half_ind = pl.where(t>0.5*t.max())[0]
-        half_twod_ind = pl.unique(twod_id[half_ind],return_index=True)[1]
+        half_ind = np.where(t>0.5*t.max())[0]
+        half_twod_ind = np.unique(twod_id[half_ind],return_index=True)[1]
         half_twod_x = x[half_twod_ind]
         half_twod_y = y[half_twod_ind]
         
@@ -96,8 +97,8 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
                 
         
         # next, use the 3d-calculated posang to fit the moments along the major/minor
-        xrot =  x*pl.cos(posang) + y*pl.sin(posang)
-        yrot = -x*pl.sin(posang) + y*pl.cos(posang)    
+        xrot =  x*np.cos(posang) + y*np.sin(posang)
+        yrot = -x*np.sin(posang) + y*np.cos(posang)    
         
         mom1yrot = tot(yrot*t) / mom0
         mom1xrot = tot(xrot*t) / mom0
@@ -105,14 +106,14 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
         # second moments
         term1xrot = tot(t*xrot**2)
         term2xrot = tot(t*xrot)**2 / mom0
-        mom2xrot = pl.sqrt((term1xrot - term2xrot)/mom0)
-        zeroind = pl.where(pl.absolute(term1xrot - term2xrot) < 1e-10)
+        mom2xrot = np.sqrt((term1xrot - term2xrot)/mom0)
+        zeroind = np.where(np.absolute(term1xrot - term2xrot) < 1e-10)
         if len(zeroind)>0: mom2xrot[zeroind] = 0.0
         
         term1yrot = tot(t*yrot**2)
         term2yrot = tot(t*yrot)**2 / mom0
-        mom2yrot = pl.sqrt((term1yrot - term2yrot)/mom0)
-        zeroind = pl.where(pl.absolute(term1yrot - term2yrot) < 1e-10)
+        mom2yrot = np.sqrt((term1yrot - term2yrot)/mom0)
+        zeroind = np.where(np.absolute(term1yrot - term2yrot) < 1e-10)
         if len(zeroind)>0: mom2yrot[zeroind] = 0.0
     
 
@@ -122,26 +123,26 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
     # Inu=max
     # I  = int(Inu dnu)
     # max is at posmax (=x[0],y[0])
-    z=pl.where( (x==x[0])*(y==y[0]) )[0]
+    z=np.where( (x==x[0])*(y==y[0]) )[0]
     # vpix=vin[z]
     # vspec=tin[z]
     moment['max_integrated']=t[z].sum()  # (input units)*chanwid
 
     # Fnu = int(Inu*dA)  at the peak channel, but what chan?
     maxchan=v[0]
-    z=pl.where( v==v[0] )[0]
+    z=np.where( v==v[0] )[0]
     moment['fnu_maxchan']=t[z].sum() # (input units)*pixels
 
     # integrated spectrum
-    vpix=pl.unique(v)
+    vpix=np.unique(v)
     vpix.sort()
     nvpix=len(vpix)
-    intspec=pl.zeros(nvpix)
+    intspec=np.zeros(nvpix)
     for i in range(nvpix):
-        z=pl.where( v==vpix[i] )[0]
+        z=np.where( v==vpix[i] )[0]
         intspec[i]=t[z].sum()
-    maxintchan=vpix[pl.where( intspec==intspec.max() )[0]]
-    z=pl.where( v==maxintchan )[0]
+    maxintchan=vpix[np.where( intspec==intspec.max() )[0]]
+    z=np.where( v==maxintchan )[0]
     moment['fnu_maxintchan']=t[z].sum()
 
     # F   = int(Inu*dA*dnu) = total
@@ -217,7 +218,7 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
 
         # TODO extrapolated posang ?
     
-        if ex_mom0<pl.nanmax(mom0):
+        if ex_mom0<np.nanmax(mom0):
 #            print "ERROR in EXTRAPOLATION!!! Extrapolated flux is LESS THAN measured flux. That is BAD!"
 #            print 'Defaulting to unweighted extrapolation...'
             ex_mom0 = extrap(t,mom0,weight=False)
@@ -266,16 +267,16 @@ def measure_moments(tin,xin,yin,vin, bm_pix=None , do_extrap=True, verbose=False
         moment['de_halfmax_ell_min']=de_hellmin
 
     elif verbose:
-        print "can't do deconvolved quantities - beam not known"
+        print("can't do deconvolved quantities - beam not known")
 
         
     
     if verbose:
-        print "0  :", moment['mom0'],moment['ex_mom0']
-        print "2x :", moment['mom2x'],moment['ex_mom2x']
-        print "2y :", moment['mom2y'],moment['ex_mom2y']
-        print "2v :", moment['mom2v'],moment['ex_mom2v']
-        print "2ma:", moment['mom2maj'],moment['ex_mom2maj']
-        print "2mi:", moment['mom2min'],moment['ex_mom2min']
+        print("0  :", moment['mom0'],moment['ex_mom0'])
+        print("2x :", moment['mom2x'],moment['ex_mom2x'])
+        print("2y :", moment['mom2y'],moment['ex_mom2y'])
+        print("2v :", moment['mom2v'],moment['ex_mom2v'])
+        print("2ma:", moment['mom2maj'],moment['ex_mom2maj'])
+        print("2mi:", moment['mom2min'],moment['ex_mom2min'])
     
     return moment

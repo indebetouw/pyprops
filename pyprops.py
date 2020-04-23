@@ -1,12 +1,12 @@
 def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,doplots=False):
 
     import sys
-    gitpaths=['/Users/remy/lustre/naasc/users/rindebet/github/pyprops/']
+    gitpaths=['/Users/remy/local/github/pyprops/']
     for gitpath in gitpaths:
         if not gitpath in sys.path:
             sys.path.insert(0,gitpath)
     
-    print "importing modules and data"
+    print("importing modules and data")
     import astropy.io.fits as fits
     from astropy.table import Table
     
@@ -17,6 +17,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     from add_noise_to_cube import add_noise_to_cube
     
     import pylab as pl
+    import numpy as np
     pl.ion()
     
     datacube=fits.getdata(datafile)
@@ -32,12 +33,12 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     hdr=fits.getheader(datafile)
     bmaj=hdr['bmaj'] # degrees
     bmin=hdr['bmin'] # degrees
-    bpa=hdr['bpa']*pl.pi/180 # ->rad
+    bpa=hdr['bpa']*np.pi/180 # ->rad
     
     from astropy import wcs
     w = wcs.WCS(hdr)
 #    pix=pl.sqrt(-pl.det(w.celestial.pixel_scale_matrix)) # degrees
-    pix=pl.absolute(w.wcs.get_cdelt()[0]) # degrees
+    pix=np.absolute(w.wcs.get_cdelt()[0]) # degrees
     
     bmaj_pix=bmaj/pix
     bmin_pix=bmin/pix
@@ -54,8 +55,8 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     assigncube=fits.getdata(assignfile)
     moments,mcmoments=cube_to_moments(datacube,assigncube,montecarlo=montecarlo,bm_pix=bm_pix,fluxmap=fluxmap)
     
-    moments['posang']=moments['posang']%pl.pi
-    moments['de_posang']=moments['de_posang']%pl.pi
+    moments['posang']=moments['posang']%np.pi
+    moments['de_posang']=moments['de_posang']%np.pi
     
     pickle.dump([moments,bm_pix,mcmoments],open(root+".pyprops.pkl","wb"))
 
@@ -64,8 +65,8 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         assigncube2=fits.getdata(assignfile2)
         moments2,mcmoments2=cube_to_moments(datacube,assigncube2,montecarlo=montecarlo,bm_pix=bm_pix,fluxmap=fluxmap)
         
-        moments2['posang']=moments2['posang']%pl.pi
-        moments2['de_posang']=moments2['de_posang']%pl.pi
+        moments2['posang']=moments2['posang']%np.pi
+        moments2['de_posang']=moments2['de_posang']%np.pi
         
         pickle.dump([moments2,bm_pix,mcmoments2],open(root2+"pyprops.pkl","wb"))
 
@@ -75,11 +76,11 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
 
     if doplots:
         pl.clf()
-        ellrad=pl.sqrt(moments['halfmax_ell_maj']*moments['halfmax_ell_min'])
+        ellrad=np.sqrt(moments['halfmax_ell_maj']*moments['halfmax_ell_min'])
         pl.plot(ellrad,moments['mom2v'],'.')
         
         if assignfile2:
-            ellrad2=pl.sqrt(moments2['halfmax_ell_maj']*moments2['halfmax_ell_min'])
+            ellrad2=np.sqrt(moments2['halfmax_ell_maj']*moments2['halfmax_ell_min'])
             pl.plot(ellrad2,moments2['mom2v'],'.')
         
         pl.xlabel("size")
@@ -93,11 +94,11 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
 
     if doplots:
         pl.clf()
-        u=pl.argsort(moments['flux'])[::-1]
+        u=np.argsort(moments['flux'])[::-1]
         pl.plot((moments['flux'][u]),pl.arange(len(u)))
         if assignfile2:
-            u2=pl.argsort(moments2['flux'])[::-1]
-            pl.plot((moments2['flux'][u2]),pl.arange(len(u2)))
+            u2=np.argsort(moments2['flux'])[::-1]
+            pl.plot((moments2['flux'][u2]),np.arange(len(u2)))
         pl.yscale("log")
         pl.xscale("log")
         pl.xlabel("flux")
@@ -110,9 +111,9 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     if doplots and montecarlo>0:
         pl.clf()
         fnu=0.5*(moments['fnu_maxintchan']+moments['fnu_maxchan'])
-        delfnu=pl.absolute(moments['fnu_maxintchan']-moments['fnu_maxchan'])
-        dfnu=0.5*pl.sqrt( moments['dfnu_maxchan']**2 + moments['dfnu_maxintchan']**2 )
-        z=pl.where(delfnu>dfnu)[0]
+        delfnu=np.absolute(moments['fnu_maxintchan']-moments['fnu_maxchan'])
+        dfnu=0.5*np.sqrt( moments['dfnu_maxchan']**2 + moments['dfnu_maxintchan']**2 )
+        z=np.where(delfnu>dfnu)[0]
         if len(z)>0:
             dfnu[z]=delfnu[z]
         
@@ -132,12 +133,12 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     # size comparisons
     if doplots and montecarlo>0:
         pl.clf()
-        bmarea=bmaj_pix*bmin_pix*pl.pi/4 # not a beam "volume" 
-        area1=moments['de_mom2maj']*moments['de_mom2min']*2.354**2*pl.pi/4/bmarea
-        darea1=area1*pl.sqrt( (moments['dde_mom2maj']/moments['de_mom2maj'])**2+
+        bmarea=bmaj_pix*bmin_pix*np.pi/4 # not a beam "volume" 
+        area1=moments['de_mom2maj']*moments['de_mom2min']*2.354**2*np.pi/4/bmarea
+        darea1=area1*np.sqrt( (moments['dde_mom2maj']/moments['de_mom2maj'])**2+
                               (moments['dde_mom2min']/moments['de_mom2min'])**2 )
-        area2=moments['de_halfmax_ell_maj']*moments['de_halfmax_ell_min']*pl.pi/4/bmarea
-        darea2=area2*pl.sqrt( (moments['dde_halfmax_ell_maj']/moments['de_halfmax_ell_maj'])**2+
+        area2=moments['de_halfmax_ell_maj']*moments['de_halfmax_ell_min']*np.pi/4/bmarea
+        darea2=area2*np.sqrt( (moments['dde_halfmax_ell_maj']/moments['de_halfmax_ell_maj'])**2+
                               (moments['dde_halfmax_ell_min']/moments['de_halfmax_ell_min'])**2 )
         
         pl.errorbar(moments['flux'],area1,xerr=moments['dflux'],yerr=darea1,fmt='.',label="mom2")
@@ -150,26 +151,26 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         
         
         
-        bmarea=bmaj_pix*bmin_pix*pl.pi/4 # not a beam "volume" 
-        area1=moments['mom2maj']*moments['mom2min']*2.354**2*pl.pi/4/bmarea
-        darea1=area1*pl.sqrt( (moments['dmom2maj']/moments['mom2maj'])**2+
+        bmarea=bmaj_pix*bmin_pix*np.pi/4 # not a beam "volume" 
+        area1=moments['mom2maj']*moments['mom2min']*2.354**2*np.pi/4/bmarea
+        darea1=area1*np.sqrt( (moments['dmom2maj']/moments['mom2maj'])**2+
                               (moments['dmom2min']/moments['mom2min'])**2 )
-        de_area1=moments['de_mom2maj']*moments['de_mom2min']*2.354**2*pl.pi/4/bmarea
-        dde_area1=de_area1*pl.sqrt( (moments['dde_mom2maj']/moments['de_mom2maj'])**2+
+        de_area1=moments['de_mom2maj']*moments['de_mom2min']*2.354**2*np.pi/4/bmarea
+        dde_area1=de_area1*np.sqrt( (moments['dde_mom2maj']/moments['de_mom2maj'])**2+
                               (moments['dde_mom2min']/moments['de_mom2min'])**2 )
-        area2=moments['halfmax_ell_maj']*moments['halfmax_ell_min']*pl.pi/4/bmarea
-        darea2=area2*pl.sqrt( (moments['dhalfmax_ell_maj']/moments['halfmax_ell_maj'])**2+
+        area2=moments['halfmax_ell_maj']*moments['halfmax_ell_min']*np.pi/4/bmarea
+        darea2=area2*np.sqrt( (moments['dhalfmax_ell_maj']/moments['halfmax_ell_maj'])**2+
                               (moments['dhalfmax_ell_min']/moments['halfmax_ell_min'])**2 )
-        de_area2=moments['de_halfmax_ell_maj']*moments['de_halfmax_ell_min']*pl.pi/4/bmarea
-        dde_area2=de_area2*pl.sqrt( (moments['dde_halfmax_ell_maj']/moments['de_halfmax_ell_maj'])**2+
+        de_area2=moments['de_halfmax_ell_maj']*moments['de_halfmax_ell_min']*np.pi/4/bmarea
+        dde_area2=de_area2*np.sqrt( (moments['dde_halfmax_ell_maj']/moments['de_halfmax_ell_maj'])**2+
                               (moments['dde_halfmax_ell_min']/moments['de_halfmax_ell_min'])**2 )
         
         pl.clf()
         pl.subplot(211)
         pl.errorbar(area1,de_area1,xerr=darea1,yerr=dde_area1,fmt='.',label="success")
-        z=pl.where(pl.isnan(de_area1))[0]
+        z=np.where(np.isnan(de_area1))[0]
         pl.errorbar(area1[z],area1[z],xerr=darea1[z],fmt='.',label="failed")
-        z=pl.where(de_area1==0)[0]
+        z=np.where(de_area1==0)[0]
         pl.errorbar(area1[z],area1[z],xerr=darea1[z],fmt='.',label="ptsrc")
         pl.ylabel("area [beams, deconv]")
         pl.xlabel("area [beams, meas]")
@@ -177,9 +178,9 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         
         pl.subplot(212)
         pl.errorbar(area2,de_area2,xerr=darea2,yerr=dde_area2,fmt='.',label="success")
-        z=pl.where(pl.isnan(de_area2))[0]
+        z=np.where(np.isnan(de_area2))[0]
         pl.errorbar(area2[z],area2[z],xerr=darea2[z],fmt='.',label="failed")
-        z=pl.where(de_area2==0)[0]
+        z=np.where(de_area2==0)[0]
         pl.errorbar(area2[z],area2[z],xerr=darea2[z],fmt='.',label="ptsrc")
         pl.ylabel("area [beams, deconv]")
         pl.xlabel("area [beams, meas]")
@@ -190,7 +191,7 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         
         
         raterr=area2/area1
-        draterr=raterr*pl.sqrt( (darea2/area2)**2 + (darea1/area1)**2 )
+        draterr=raterr*np.sqrt( (darea2/area2)**2 + (darea1/area1)**2 )
         pl.clf()
         pl.errorbar(area2,raterr,xerr=darea2,yerr=draterr,fmt='.')
         pl.xlabel("ell area")
@@ -203,16 +204,16 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
     # fluxes and integrated spectra:
     if doplots and montecarlo>0:
         ratiofnu=moments['fnu_maxintchan']/moments['fnu_maxchan']
-        dratio=ratiofnu*pl.sqrt( (moments['dfnu_maxchan']/moments['fnu_maxchan'])**2 +
+        dratio=ratiofnu*np.sqrt( (moments['dfnu_maxchan']/moments['fnu_maxchan'])**2 +
                                  (moments['dfnu_maxintchan']/moments['fnu_maxintchan'])**2 )
         difffnu=moments['fnu_maxintchan']-moments['fnu_maxchan']
-        ddiff=pl.sqrt( moments['dfnu_maxchan']**2 +
+        ddiff=np.sqrt( moments['dfnu_maxchan']**2 +
                        moments['dfnu_maxintchan']**2 )
         
         fnu=0.5*(moments['fnu_maxintchan']+moments['fnu_maxchan'])
         
         pl.clf()
-        z=pl.where(difffnu>0)[0]
+        z=np.where(difffnu>0)[0]
         pl.errorbar(moments['fnu_maxchan'][z],(difffnu/fnu)[z],xerr=moments['dfnu_maxchan'][z],yerr=(ddiff/fnu)[z],fmt='.')
         pl.xlabel("Fnu @max    [Bunit * pix^2]")
         pl.ylabel("(Fnu @maxint - Fnu @max)/Fnu")
@@ -263,11 +264,11 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.plot([bm_pix[0]*1.12,pl.xlim()[1]],[bm_pix[1]*1.12,bm_pix[1]*1.12],'k',linestyle='dotted')
         pl.plot([bm_pix[0]*1.12,bm_pix[0]*1.12],[bm_pix[1]*1.12,pl.ylim()[1]],'k',linestyle='dotted')
         
-        z=pl.where(pl.isnan(moments['de_halfmax_ell_maj']))[0]
+        z=np.where(np.isnan(moments['de_halfmax_ell_maj']))[0]
         pl.plot(moments['halfmax_ell_maj'][z],moments['halfmax_ell_min'][z],'s',label='dec=nan')
-        z=pl.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']>0))[0]
+        z=np.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']>0))[0]
         pl.plot(moments['halfmax_ell_maj'][z],moments['halfmax_ell_min'][z],'cd',label='dec min=0')
-        z=pl.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']==0))[0]
+        z=np.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']==0))[0]
         pl.plot(moments['halfmax_ell_maj'][z],moments['halfmax_ell_min'][z],'r*',label='dec both=0')
         pl.legend(loc="best",prop={"size":10},numpoints=1)
         
@@ -282,11 +283,11 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.plot(pl.xlim(),[bm_pix[1],bm_pix[1]],'k',linestyle='dotted')
         pl.plot(pl.xlim(),[bm_pix[1]*1.12,bm_pix[1]*1.12],'k',linestyle='dotted')
         
-        z=pl.where(pl.isnan(moments['de_halfmax_ell_maj']))[0]
+        z=np.where(np.isnan(moments['de_halfmax_ell_maj']))[0]
         pl.plot(moments['posang'][z],moments['halfmax_ell_min'][z],'s',label='dec=nan')
-        z=pl.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']>0))[0]
+        z=np.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']>0))[0]
         pl.plot(moments['posang'][z],moments['halfmax_ell_min'][z],'cd',label='dec min=0')
-        z=pl.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']==0))[0]
+        z=np.where((moments['de_halfmax_ell_min']==0)*(moments['de_halfmax_ell_maj']==0))[0]
         pl.plot(moments['posang'][z],moments['halfmax_ell_min'][z],'r*',label='dec both=0')
         pl.legend(loc="best",prop={"size":10},numpoints=1)
         
@@ -296,8 +297,8 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         
         p  =moments['posang'].copy()
         dp=moments['de_posang'].copy()
-        p=(p-bm_pix[2]+pl.pi/2)%pl.pi +bm_pix[2]-pl.pi/2
-        dp=(dp-bm_pix[2]+pl.pi/2)%pl.pi +bm_pix[2]-pl.pi/2
+        p=(p-bm_pix[2]+np.pi/2)%np.pi +bm_pix[2]-np.pi/2
+        dp=(dp-bm_pix[2]+np.pi/2)%np.pi +bm_pix[2]-np.pi/2
         
         pl.clf()
         pl.plot(p,dp,'.')
@@ -306,6 +307,6 @@ def pyprops(datafile,fluxfile,assignfile,root,assignfile2=None,montecarlo=0,dopl
         pl.xlabel("meas posang")
         pl.ylabel("deconv posang")
         
-        pl.plot(pl.xlim(),[bm_pix[2]+pl.pi/2,bm_pix[2]+pl.pi/2],'k',linestyle='dotted')
+        pl.plot(pl.xlim(),[bm_pix[2]+np.pi/2,bm_pix[2]+np.pi/2],'k',linestyle='dotted')
     
         pl.savefig(root+".pyprops.dec_ellipses_angles.png")

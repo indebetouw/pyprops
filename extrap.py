@@ -33,17 +33,19 @@ def extrap( xin, yin, targett = 0.,
 
 # scatter = !values.f_nan
 
-    import pylab as pl
+    import matplotlib.pyplot as pl
+    import numpy as np
+    
 # THE TARGET FOR THE EXTRAPOLATION
     if (targett>xin.min()) and (targett<xin.max()):
-        d = pl.absolute(xin - targett)
-        z = pl.where(d==d.min())[0]
+        d = np.absolute(xin - targett)
+        z = np.where(d==d.min())[0]
         #if len(z)>1: # e.g. it goes down into noise, with targett=0
-        return pl.nanmedian(yin[z])
+        return np.nanmedian(yin[z])
 
 # CAN'T EXTRAPOLATE WITH LESS THAN 5 DATA POINTS
     if len(xin) < 5:
-        return pl.nan
+        return np.nan
 
 # REVERSE THE (SORTED increasing) ARRAYS BEFORE EXTRAPOLATING
     xuse = xin[::-1]
@@ -51,25 +53,25 @@ def extrap( xin, yin, targett = 0.,
 
     import pylab as pl
 # CULL OUT BAD VALUES
-    goodind = pl.where(pl.isnan(yuse)==False)[0]
+    goodind = np.where(np.isnan(yuse)==False)[0]
     if len(goodind)>0:
         yuse = yuse[goodind]
         xuse = xuse[goodind]
   
 # TO DO THINGS FAST, WE DECIMATE THE ARRAY DOWN TO 250 ELEMENTS
     if fast and (len(xuse) > 250):
-        useindex = pl.int32(pl.frange(249)*len(xuse)/250.)
+        useindex = np.int32(np.arange(250)*len(xuse)/250.)
         xuse = xuse[useindex]
         yuse = yuse[useindex]
   
 # KEEP FITTING, INCLUDING PROGRESSIVELY MORE AND MORE OF THE CLOUD
     if not weight:
 
-        coeffs = pl.ones([2,len(xuse)])*pl.nan
+        coeffs = np.ones([2,len(xuse)])*np.nan
         if square:
-            coeffs = pl.ones([3,len(xuse)])*pl.nan
+            coeffs = np.ones([3,len(xuse)])*np.nan
     
-        for i in pl.arange(len(xuse)-3)+3:
+        for i in np.arange(len(xuse)-3)+3:
             xfit = xuse[0:i]
             yfit = yuse[0:i]    
             n = len(xfit)
@@ -82,52 +84,52 @@ def extrap( xin, yin, targett = 0.,
             if not square:
                 M = [[n, xfits], 
                      [xfits, xfit2s]]
-                covar = pl.linalg.inv(M)
-                coeffs[:, i] = pl.dot(covar,[yfits, (xfit*yfit).sum()])
+                covar = np.linalg.inv(M)
+                coeffs[:, i] = np.dot(covar,[yfits, (xfit*yfit).sum()])
             else:
                 xfit3s = (xfit**3).sum()
                 M = [[n, xfits, xfit2s], 
                      [xfits, xfit2s, xfit3s], 
                      [xfit2s, xfit3s, (xfit**4).sum()]]
-                covar = pl.linalg.inv(M)
-                coeffs[:, i] = pl.dot(covar,[yfits, (xfit*yfit).sum(), (xfit**2*yfit).sum()])
+                covar = np.linalg.inv(M)
+                coeffs[:, i] = np.dot(covar,[yfits, (xfit*yfit).sum(), (xfit**2*yfit).sum()])
 
         #   DO THE EXTRAPOLATION
-        extrap_value = pl.nanmedian(coeffs[0, :] + coeffs[1, :]*targett)
+        extrap_value = np.nanmedian(coeffs[0, :] + coeffs[1, :]*targett)
         def mad(data, axis=None):
-            return pl.nanmedian(pl.absolute(data - pl.nanmedian(data, axis)), axis)
+            return np.nanmedian(np.absolute(data - np.nanmedian(data, axis)), axis)
         scatter =  mad(coeffs[0, :] + coeffs[1, :]*targett)
         if square:
-            extrap_value = pl.nanmedian(coeffs[0, :] + coeffs[1, :]*targett + 
+            extrap_value = np.nanmedian(coeffs[0, :] + coeffs[1, :]*targett + 
                                      coeffs[2, :]*targett**2)  
             scatter = mad(coeffs[0, :] + coeffs[1, :]*targett + 
                           coeffs[2, :]*targett**2)  
 
     else:
-        coeffs = pl.ones(2)*pl.nan
+        coeffs = np.ones(2)*np.nan
         if square:
-            coeffs = pl.ones(3)*pl.nan
+            coeffs = np.ones(3)*np.nan
 
         xfit = xuse
         yfit = yuse
     
         # WEIGHT BY CONTOUR NUMBER (BIG = MORE WEIGHT)
-        wfit = (pl.frange(len(yfit)-1)+1)[::-1]
+        wfit = (np.arange(len(yfit))+1)[::-1]
 
         crosssum=(xfit*wfit).sum()
         if not square:            
             M = [[wfit.sum(), crosssum], 
                  [crosssum, (xfit**2*wfit).sum()]]
-            covar = pl.linalg.inv(M)
-            coeffs = pl.dot(covar,[(yfit*wfit).sum(), (xfit*yfit*wfit).sum()])
+            covar = np.linalg.inv(M)
+            coeffs = np.dot(covar,[(yfit*wfit).sum(), (xfit*yfit*wfit).sum()])
         else:
             crosssum2=(xfit**2*wfit).sum()
             crosssum3=(xfit**3*wfit).sum()
             M = [[wfit.sum(), crosssum, crosssum2], 
                  [crosssum, crosssum2, crosssum3], 
                  [crosssum2, crosssum3, (xfit**4*wfit).sum()]]
-            covar = pl.linalg.inv(M)
-            coeffs = pl.dot(covar,[(yfit*wfit).sum(), (xfit*yfit*wfit).sum(),
+            covar = np.linalg.inv(M)
+            coeffs = np.dot(covar,[(yfit*wfit).sum(), (xfit*yfit*wfit).sum(),
                                    (xfit**2*yfit*wfit).sum()])
 
         extrap_value = coeffs[0] + coeffs[1]*targett

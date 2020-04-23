@@ -11,19 +11,20 @@ def cube_to_moments( datacube, assigncube, montecarlo=0, bm_pix=[0,0,0], verbose
     
     # checks on inputs:
     if len(datacube.shape)!=3:
-        print "data doesn't have correct shape - its ",datacube.shape
+        print("data doesn't have correct shape - its ",datacube.shape)
     #    return
     if len(assigncube.shape)!=3:
-        print "assign doesn't have correct shape - its ",assigncube.shape
+        print("assign doesn't have correct shape - its ",assigncube.shape)
     #    return
 
-    import pylab as pl
+    import matplotlib.pyplot as pl
+    import numpy as np
     # create cloud list:
-    zassigned=pl.where(assigncube>0)
+    zassigned=np.where(assigncube>0)
     if len(zassigned[0])==0:
-        print "assignment cube appears to be blank"
+        print("assignment cube appears to be blank")
     #    return
-    cloudlist=pl.unique(assigncube[zassigned])
+    cloudlist=np.unique(assigncube[zassigned])
     
     # vectorize the cubes for speed
     assign_vec = assigncube[zassigned]
@@ -32,22 +33,22 @@ def cube_to_moments( datacube, assigncube, montecarlo=0, bm_pix=[0,0,0], verbose
     # (remembering that cube is in v,y,x order in python)
     
     # to be used for montecarlo cube convolution
-    beamsize_pix=pl.sqrt(bm_pix[0]*bm_pix[1]) # convolution can only do circular for now
+    beamsize_pix=np.sqrt(bm_pix[0]*bm_pix[1]) # convolution can only do circular for now
                 
     def mad(data, axis=None):
-        return pl.nanmedian(pl.absolute(data - pl.nanmedian(data, axis)), axis)
+        return np.nanmedian(np.absolute(data - np.nanmedian(data, axis)), axis)
     
     # measure the moments
     ncl=len(cloudlist)
     from measure_moments import measure_moments
     moments={}
-    print "measuring moments"
+    print("measuring moments")
     for i in range(ncl):
     #    if verbose: print "cloud  %5i / %5i \r"%(cloudlist[i],cloudlist.max()),
     
-        zi=pl.where( (assign_vec==cloudlist[i]) * (pl.isnan(data_vec)==False) )[0]
+        zi=np.where( (assign_vec==cloudlist[i]) * (np.isnan(data_vec)==False) )[0]
         if len(zi)<=0:
-            print "cloud ",cloudlist[i]," is bad"
+            print("cloud ",cloudlist[i]," is bad")
         t=data_vec[zi].copy()
         v=zassigned[0][zi].copy()
         y=zassigned[1][zi].copy()
@@ -78,7 +79,7 @@ def cube_to_moments( datacube, assigncube, montecarlo=0, bm_pix=[0,0,0], verbose
         # gaussfit to spec:
         # reassemble spec at position of mom1x, mom1y
     #    mom1pos=[int(round(m['mom1x'])),int(round(m['mom1y']))]
-    #    z=pl.where( (x==mom1pos[0]) * (y==mom1pos[1]) )[0]
+    #    z=np.where( (x==mom1pos[0]) * (y==mom1pos[1]) )[0]
     #    spec=v[z]
     #    pdb.set_trace()
     
@@ -90,14 +91,14 @@ def cube_to_moments( datacube, assigncube, montecarlo=0, bm_pix=[0,0,0], verbose
         from add_noise_to_cube import add_noise_to_cube
         mc=montecarlo
         for k in mckeys:
-            mcmoments[k]=pl.zeros([ncl,mc])
+            mcmoments[k]=np.zeros([ncl,mc])
         for j in range(mc):
             sys.stdout.write("\rnoisy cube %03i/%03i"%(j,mc))
             sys.stdout.flush()
             noisy_cube=add_noise_to_cube(datacube,beamsize_pix,fluxmap=None)
             mcdata_vec = noisy_cube[zassigned]
             for i in range(ncl):
-                zi=pl.where( (assign_vec==cloudlist[i]) * (pl.isnan(mcdata_vec)==False) )[0]
+                zi=np.where( (assign_vec==cloudlist[i]) * (np.isnan(mcdata_vec)==False) )[0]
                 v=zassigned[0][zi].copy()
                 y=zassigned[1][zi].copy()
                 x=zassigned[2][zi].copy()
@@ -110,7 +111,7 @@ def cube_to_moments( datacube, assigncube, montecarlo=0, bm_pix=[0,0,0], verbose
                 try:
                     moments['d'+k][i]=mad(mcmoments[k][i])/.6745 # mad =.6745 sigma
                 except KeyError:
-                    moments['d'+k]=pl.zeros(ncl)
+                    moments['d'+k]=np.zeros(ncl)
                     moments['d'+k][i]=mad(mcmoments[k][i])/.6745 # mad =.6745 sigma
     
                 # test:
@@ -118,21 +119,21 @@ def cube_to_moments( datacube, assigncube, montecarlo=0, bm_pix=[0,0,0], verbose
                     try:
                         moments['d10'+k][i]=mad(mcmoments[k][i][0:10])/.6745 
                     except KeyError:
-                        moments['d10'+k]=pl.zeros(ncl)
+                        moments['d10'+k]=np.zeros(ncl)
                         moments['d10'+k][i]=mad(mcmoments[k][i][0:10])/.6745 
                     try:
                         moments['d30'+k][i]=mad(mcmoments[k][i][0:30])/.6745 
                     except KeyError:
-                        moments['d30'+k]=pl.zeros(ncl)
+                        moments['d30'+k]=np.zeros(ncl)
                         moments['d30'+k][i]=mad(mcmoments[k][i][0:30])/.6745 
                     try:
                         moments['d100'+k][i]=mad(mcmoments[k][i][0:100])/.6745 
                     except KeyError:
-                        moments['d100'+k]=pl.zeros(ncl)
+                        moments['d100'+k]=np.zeros(ncl)
                         moments['d100'+k][i]=mad(mcmoments[k][i][0:100])/.6745 
     
     for k,v in moments.items():
-        moments[k]=pl.array(v)
+        moments[k]=np.array(v)
     
     return moments, mcmoments
 
