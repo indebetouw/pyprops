@@ -8,11 +8,18 @@ def ellfit(x,y,wt=None):
     #   POSANG - the position angle CCW from the X=0 line of the coordinates 
     #
     #   Adam: The intensity weighted major and minor values are equal to the
-    #   second moment. For equal weighting by pixel (of the sort that
+    #   second moment.
+    #   For equal weighting by pixel (of the sort that
     #   might be done for blob analysis) the ellipse fit to the
     #   half-maximum area will have semimajor axis equal to 1./1.69536 the
     #   second moment. For the quarter maximum surface this is 1./1.19755.
     #
+    #   i.e. if you run this with x,y down to zero intensity (like integrating
+    #   to infinity), and wt=intensity, you get the second moments sig_major,
+    #   sig_minor back
+    #   if you run this with x,y down to half-intensity, and wt=None, you get
+    #   sigx/1.6986 back  (not sure why my integra differs from his slightly)
+    #   
     #   but adam did not have the factor of 4 to turn eigenval into major axis 
     # 
     #   translation: if we run this with intensity weight, we get
